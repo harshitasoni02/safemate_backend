@@ -184,9 +184,9 @@ router.patch(
     authenticate,
     requireRole('admin'),
     [
-        param('id').isUUID(),
+        param('id').isUUID().withMessage('Invalid report ID format'),
         body('status').isIn(VALID_STATUS).withMessage(`Status must be one of: ${VALID_STATUS.join(', ')}`),
-        body('note').optional().isString().trim().isLength({ max: 500 }),
+        body('note').optional({ checkFalsy: true }).isString().trim().isLength({ max: 500 }),
     ],
     async (req, res) => {
         const errors = validationResult(req);
