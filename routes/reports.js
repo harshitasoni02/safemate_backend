@@ -18,14 +18,14 @@ router.post(
     [
         body('latitude').isFloat({ min: -90, max: 90 }),
         body('longitude').isFloat({ min: -180, max: 180 }),
-        body('address').optional().isString().trim(),
+        body('address').optional({ checkFalsy: true, nullable: true }).isString().trim(),
         body('severity').isIn(VALID_SEVERITY),
         body('water_level').isIn(VALID_WATER),
-        body('urgency').optional().isIn(VALID_URGENCY),
-        body('description').optional().isString().trim().isLength({ max: 2000 }),
-        body('photo_url').optional().isURL(),
-        body('damage_types').optional().isArray(),
-        body('damage_types.*').optional().isIn(VALID_DAMAGE),
+        body('urgency').optional({ checkFalsy: true, nullable: true }).isIn(VALID_URGENCY),
+        body('description').optional({ checkFalsy: true, nullable: true }).isString().trim().isLength({ max: 2000 }),
+        body('photo_url').optional({ checkFalsy: true, nullable: true }).isURL(),
+        body('damage_types').optional({ nullable: true }).isArray(),
+        body('damage_types.*').optional({ nullable: true }).isIn(VALID_DAMAGE),
     ],
     async (req, res) => {
         const errors = validationResult(req);
