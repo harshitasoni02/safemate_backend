@@ -26,6 +26,8 @@ router.post(
         body('photo_url').optional({ checkFalsy: true, nullable: true }).isURL(),
         body('damage_types').optional({ nullable: true }).isArray(),
         body('damage_types.*').optional({ nullable: true }).isIn(VALID_DAMAGE),
+        body('people_count').optional().isInt({ min: 1 }),
+        body('medical_needed').optional().isBoolean(),
     ],
     async (req, res) => {
         const errors = validationResult(req);
@@ -35,6 +37,7 @@ router.post(
             latitude, longitude, address,
             severity, water_level, urgency = 'normal',
             description, photo_url,
+            people_count = 1, medical_needed = false,
             damage_types = []
         } = req.body;
 
@@ -44,11 +47,13 @@ router.post(
                 const rep = await client.query(
                     `INSERT INTO flood_reports
                         (user_id, latitude, longitude, address,
-                         severity, water_level, urgency, description, photo_url)
-                     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+                         severity, water_level, urgency, description, photo_url,
+                         people_count, medical_needed)
+                     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
                      RETURNING *`,
                     [req.user.id, latitude, longitude, address,
-                        severity, water_level, urgency, description, photo_url]
+                        severity, water_level, urgency, description, photo_url,
+                        people_count, medical_needed]
                 );
                 const report = rep.rows[0];
 
@@ -266,7 +271,8 @@ router.get(
                     COUNT(*) FILTER (WHERE status = 'resolved')        AS resolved,
                     COUNT(*) FILTER (WHERE urgency = 'life_threatening') AS life_threatening,
                     COUNT(*) FILTER (WHERE severity = 'critical')      AS critical,
-                    COUNT(*) FILTER (WHERE created_at > NOW() - INTERVAL '24 hours') AS last_24h
+                    COUNT(*) FILTER (WHERE created_at > NOW() - INTERVAL '24 hours') AS last_24h,
+                    COALESCE(SUM(people_count) FILTER (WHERE status = 'resolved'), 0) AS people_rescued
                 FROM flood_reports
             `);
             res.json(result.rows[0]);
