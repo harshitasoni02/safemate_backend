@@ -12,7 +12,7 @@ router.post(
         body('name').trim().notEmpty().withMessage('Name is required'),
         body('email').isEmail().normalizeEmail().withMessage('Valid email required'),
         body('password').isLength({ min: 8 }).withMessage('Password must be at least 8 chars'),
-        body('phone').optional().isMobilePhone(),
+        body('phone').optional({ checkFalsy: true }).isMobilePhone().withMessage('Invalid phone number'),
     ],
     async (req, res) => {
         const errors = validationResult(req);
