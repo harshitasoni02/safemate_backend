@@ -18,7 +18,11 @@ app.use(cors({
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true }));
 
-// ── Health check ─────────────────────────────────────────────
+// ── Root & Health check ──────────────────────────────────────
+app.get('/', (_req, res) => {
+    res.json({ message: 'Welcome to the SafeMate API', status: 'online' });
+});
+
 app.get('/health', (_req, res) => {
     res.json({ status: 'ok', service: 'safemate-api', time: new Date().toISOString() });
 });
